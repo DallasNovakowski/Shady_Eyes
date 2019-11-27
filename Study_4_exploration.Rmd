@@ -1,0 +1,170 @@
+---
+title: "Study_4 data exploration"
+author: "Dallas Novakowski"
+date: "27/11/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r required packages & data, warning=F,  message=F}
+library(repmis)
+library(tidyverse)
+library(corrplot)
+library(data.table)
+
+source_data("https://github.com/DallasNovakowski/Shady_Eyes/blob/master/sunglasses_study4_clean1_11_26_2019.Rdata?raw=true")
+```
+
+# Demographic Descriptives
+
+```{r demographics, warning=F,  message=F}
+
+hist(data_reduced1$age)
+
+table(data_reduced1$gender)
+
+table(data_reduced1$employment)
+hist(data_reduced1$education)
+hist(data_reduced1$annual_income)
+
+```
+
+
+# Manipulation descriptives
+
+```{r manipulations}
+table(data_reduced1$shade, data_reduced1$male_model)
+
+
+table(data_reduced1$male_model)
+
+table(data_reduced1$shade)
+
+```
+
+
+# DV and mediator descriptives
+```{r Dv and mediators, warning=F,  message=F}
+hist(data_reduced1$recommend)
+
+ggplot(data_reduced1, aes(recommend)) + geom_histogram()
+
+ggplot(data_reduced1, aes(wtb)) + geom_histogram()
+
+
+data_reduced1$value_assess <- as.character(data_reduced1$value_assess)
+
+data_reduced1$value_assess_num <- as.numeric(data_reduced1$value_assess)
+
+ggplot(data_reduced1, aes(value_assess_num)) + geom_histogram(binwidth=50)
+
+ggplot(data_reduced1, aes(y=value_assess_num)) + geom_boxplot()
+
+
+```
+
+
+There are some substantial outliers in the value assessment variable (arguably to be labeled WTP). If we run analyses on this variable, these values are likely to have high residuals and subsequently have high influence on the estimated slope
+
+
+### SO: let's filter out those observations with value assessments >= $2000
+
+``` {r Filtering out high evaluators (and 3 NAs), warning=F,  message=F}
+
+data_reduced2 <- filter(data_reduced1, data_reduced1$value_assess_num < 2000)
+
+ggplot(data_reduced2, aes(y=value_assess_num)) + geom_boxplot()
+
+nrow(data_reduced2)
+table(data_reduced2$shade, data_reduced2$male_model)
+
+```
+
+# Exploratory factor analyses on model attributes
+
+### Correlations between the ratings of model attributes
+
+```{r correlations, warning=F,  message=F}
+library(Hmisc)
+model_cor <-  cor(data_reduced2[,VarBase$modelpers])
+
+nrow(data_reduced2)
+
+data_reduced3 <- data_reduced2[complete.cases(data_reduced2),]
+nrow(data_reduced3)
+
+nona_model_cor <-  cor(data_reduced3[,VarBase$modelpers])
+
+
+```
+### factor analysis prep & EFA 1
+```{r exploratory factor analyses 1, warning=F,  message=F}
+
+library(parallel)
+library(nFactors)
+library(polycor)
+library(GPArotation)
+
+ev <- eigen(nona_model_cor)  
+ap <- nFactors::parallel(subject=468, var=nrow(nona_model_cor), rep=100, cent=.05)
+nS <- nScree(x=ev$values, aparallel=ap$eigen$qevpea)
+
+print(nS)
+nS$Components$nparallel
+
+nfact <- nS$Components$nparallel
+
+modelpers_fa <- fa(r=nona_model_cor, covar=T, n.obs=468, nfactors=nfact, rotate="promax")
+
+print(modelpers_fa, digits=2, cutoff=.3, sort=T)
+print(modelpers_fa$loadings, digits=2, cutoff=.3, sort=T)
+```
+
+### EFA 2, removing cross-loaded items
+```{r EFA 2}
+VarBase$modelpers_nocross <- c("model_pushyr", "model_genuine", "model_fake", "model_sincere", "model_suspicious","model_phony", "model_professional","model_assertive", "model_knowledgeable", "model_experienced", "model_peaceful", "model_calm", "model_honest", "model_friendly", "model_respectful")
+
+nocross_model_cor <-  cor(data_reduced3[,VarBase$modelpers_nocross])
+
+nocross_model_pers_fa <- fa(r=nocross_model_cor, covar=T, n.obs=468, nfactors=nfact, rotate="promax")
+
+
+print(nocross_model_pers_fa, digits=2, cutoff=.3, sort=T)
+print(nocross_model_pers_fa$loadings, digits=2, cutoff=.3, sort=T)
+```
+
+### EFA 3, attempt at further refinement
+``` {r EFA 3}
+VarBase$modelpers_nocross2 <- c("model_pushyr", "model_genuine", "model_fake", "model_sincere", "model_suspicious","model_phony", "model_professional","model_assertive", "model_knowledgeable", "model_experienced", "model_peaceful", "model_calm", "model_honest", "model_friendly")
+
+nocross2_model_cor <-  cor(data_reduced3[,VarBase$modelpers_nocross2])
+
+nocross2_model_pers_fa <- fa(r=nocross2_model_cor, covar=T, n.obs=468, nfactors=nfact, rotate="promax")
+
+print(nocross2_model_pers_fa, digits=2, cutoff=.3, sort=T)
+print(nocross2_model_pers_fa$loadings, digits=2, cutoff=.3, sort=T)
+```
+
+## model attributes EFA summary
+Looks like MR2 is always going to have some degree of cross-loading, so let's go with EFA 2 for future analyses: it at least gives us 3 unique loadings.
+Call them MR1 = phony, MR2 = approachable, MR3 = expertise
+
+```{r appending factor scores}
+fs <- factor.scores(data_reduced3[,VarBase$modelpers_nocross], nocross_model_pers_fa)
+fs <- fs$scores
+data_reduced4 <- cbind(data_reduced3, fs)
+
+setnames(data_reduced4, old = c("MR1", "MR2", "MR3"), new = c("phony", "approachable", "expertise"))
+
+data_reduced4 <-dplyr::select (data_reduced4, -c(VarBase$modelpers))
+  
+```
+
+```{r write new csv and rdata}
+write.csv(data_reduced4, file="C:/Users/dalla/Google Drive/R Coding/Shady_Eyes/sunglasses_Study4_clean2_11_27_2019.csv")
+
+save(data_reduced1, VarBase, file="C:/Users/dalla/Google Drive/R Coding/Shady_Eyes/sunglasses_study4_clean2_11_27_2019.Rdata")
+```
