@@ -117,7 +117,7 @@ Now that we've 1) filtered for attention check, time to read the ad, and finishi
 
 
 ```{r new cleaned .csv}
-data_reduced1 <- data_noquickies[,c(VarBase$demo, VarBase$factors, VarBase$shadiness, VarBase$manipchecks, VarBase$adsbeliefs, VarBase$consum, VarBase$modelrate, VarBase$productrate, VarBase$adrate, VarBase$conditions)]
+data_reduced1 <- data_noquickies[,c(VarBase$demo, VarBase$factors, VarBase$shadiness, VarBase$manipchecks, VarBase$adsbeliefs, VarBase$consum, VarBase$modelpers, VarBase$modelrate, VarBase$productrate, VarBase$adrate, VarBase$conditions)]
 
 write.csv(data_reduced1, file="C:/Users/dalla/Google Drive/R Coding/Shady_Eyes/sunglasses_Study4_clean1_11_26_2019.csv")
 
