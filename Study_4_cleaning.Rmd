@@ -79,8 +79,8 @@ VarBase$conditions <- c('female_clear', 'male_clear', 'female_med', 'female_dark
 VarBase$demo <- c('gender','age', 'home_lang', 'english_length_nohome', 'wear_glasses', 'employment', 'annual_income', 'education')
 VarBase$adrate <- names(data_noquickies)[30:40]
 VarBase$productrate <- names(data_noquickies)[41:52]
-VarBase$modelpers <- c("model_competent", "model_pushyr", names(data_noquickies)[55:78])
-VarBase$modelrate <- names(data_noquickies)[79:90]
+VarBase$modelpers <- c("model_competent", "model_pushyr", names(data_noquickies)[55:77])
+VarBase$modelrate <- names(data_noquickies)[78:90]
 VarBase$consum <- names(data_noquickies)[92:94]
 VarBase$adsbeliefs <- names(data_noquickies)[95:102]
 VarBase$manipchecks <- names(data_noquickies)[103:105]
