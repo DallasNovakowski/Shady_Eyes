@@ -33,7 +33,21 @@ nrow(data_careful)
 #using the Q42 as a filter (item that describes hypotheses- equivalent to reaching the finish of the study), reduces n from 589 to 564
 data_attQ42 <- filter(data_careful, data_careful$Q42 == 1)
 nrow(data_attQ42)
+
+data_finish <- filter(data_att, data_att$Finished == 1)
+nrow(data_finish)
+
+data_att_glasses <- filter(data_attQ42, data_attQ42$p_glasses == 1)
+nrow(data_att_glasses)
+
 ```
+
+using the finished variable seems to be too conservative: generally, participants that scored 0 on the "Finished" variable had responses for all the variables
+
+Moreover, using the item "p_glasses" ("Did the person featured in the advertisement wear glasses?") might not be appropriate as a filter: some respondents seemed to have interpreted the item as referring to perscription (i.e., clear) glasses
+
+With this in mind, let's use data_attQ42 as our stopping point for attention checks
+
 
 ## Time to look at ad
 ```{r time_to_submit}
@@ -53,7 +67,7 @@ data_noquickies <- as_tibble(data_noquickies)
 
 ## So now we have an analytic sample of 492 (unless we also want to exclude people that took excessively long)
 
-Let's make some variable lists for easier data management down the road
+#Let's make some variable lists for easier data management down the road
 
 
 ```{r cleaning factors and making lists}
