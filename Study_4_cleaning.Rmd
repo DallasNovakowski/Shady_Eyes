@@ -1,0 +1,108 @@
+---
+title: "Sunglasses project - Study 4, preliminary data and prep"
+author: "Dallas Novakowski"
+date: "23/26/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Required Packages
+```{r package_loading, results="hide"}
+library(tidyverse)
+```
+
+```{r local data loading}
+data <- read.csv("C:/Users/dalla/Google Drive/R Coding/Shady_Eyes/Legacy_SunglassesStudy4June_2017_namedheaders.csv")
+```
+
+
+## Attention checks
+``` {r attention checks}
+#filter for paperclip attention check, reducing n from 698 to 600
+data_att <- filter(data, data$atn_paperclip == 1)
+nrow(data_att)
+
+#"Please carefully look at this advertisement and then answer the following questions. Make sure you read all the information in the ad."
+#Reduces n from 600 to 589
+data_careful <- filter(data_att, data_att$careful_check == 1)
+nrow(data_careful)
+
+#using the Q42 as a filter (item that describes hypotheses- equivalent to reaching the finish of the study), reduces n from 589 to 564
+data_attQ42 <- filter(data_careful, data_careful$Q42 == 1)
+nrow(data_attQ42)
+```
+
+## Time to look at ad
+```{r time_to_submit}
+ggplot(data = data_attQ42, aes(x = time_submit)) + geom_histogram(binwidth=1)
+
+data_timeoutliers <- filter(data_attQ42, data_attQ42$time_submit < 100)
+ggplot(data = data_timeoutliers, aes(x = time_submit)) +geom_histogram(binwidth=1)
+```
+
+### Looks like a group of respondents took < 10 seconds to look at the ad, let's filter this group out and run the analyses on the remainder
+
+```{r filter_quick_responder}
+data_noquickies <- filter(data_attQ42, data_attQ42$time_submit > 10)
+nrow(data_noquickies)
+data_noquickies <- as_tibble(data_noquickies)
+```
+
+## So now we have an analytic sample of 492 (unless we also want to exclude people that took excessively long)
+
+Let's make some variable lists for easier data management down the road
+
+
+```{r cleaning factors and making lists}
+VarBase <- list()
+VarBase$conditions <- c('female_clear', 'male_clear', 'female_med', 'female_dark', 'male_med', 'male_dark')
+VarBase$demo <- c('gender','age', 'home_lang', 'english_length_nohome', 'wear_glasses', 'employment', 'annual_income', 'education')
+VarBase$adrate <- names(data_noquickies)[30:40]
+VarBase$productrate <- names(data_noquickies)[41:52]
+VarBase$modelrate <- names(data_noquickies)[53:90]
+VarBase$consum <- names(data_noquickies)[92:94]
+VarBase$adsbeliefs <- names(data_noquickies)[95:102]
+VarBase$manipchecks <- names(data_noquickies)[103:105]
+```
+
+With the legacy pull in qualtrics, participants' assigned condition is coded as a binary variable, but we need variables with 2+ levels (namely, shade), so let's create some new variables for analysis
+
+``` {r coding_factors}
+#change missing values to zeros for condition assignments
+data_noquickies[,c(VarBase$conditions)][is.na(data_noquickies[,c(VarBase$conditions)])] <- 0
+
+#create variable for male model (1 = male, 0 = female)
+data_noquickies$male_model <- rowSums(cbind(data_noquickies$male_clear, data_noquickies$male_med, data_noquickies$male_dark))
+
+data_noquickies$clear_shade <- rowSums(cbind(data_noquickies$male_clear, data_noquickies$female_clear))
+data_noquickies$med_shade <- rowSums(cbind(data_noquickies$male_med, data_noquickies$female_med))
+data_noquickies$dark_shade <- rowSums(cbind(data_noquickies$male_dark, data_noquickies$female_dark))
+
+VarBase$shadiness <- c('clear_shade', 'med_shade', 'dark_shade')
+
+#create single variable for shadiness
+condition_coding <- function(x, y, z){
+      if(x == 1) shade <- 0 else if (y == 1) shade <- 1 else if (z==1) shade <- 2 else shade <- NA
+}
+
+data_noquickies$shade <- mapply(condition_coding, x = data_noquickies$clear_shade, y = data_noquickies$med_shade, z = data_noquickies$dark_shade)
+
+VarBase$factors <- c('male_model', 'shade')
+VarBase$all <- c(VarBase$demo, VarBase$factors, VarBase$shadiness, VarBase$manipchecks, VarBase$adsbeliefs, VarBase$consum, VarBase$modelrate, VarBase$productrate, VarBase$adrate, VarBase$conditions)
+```
+
+
+Now that we've 1) filtered for attention check, time to read the ad, and finishing the survey, 2) made some variable lists, and 3) made some new variables, let's put make a new dataset that doesn't make my eyes bleed as much
+
+
+```{r new cleaned .csv}
+data_reduced1 <- data_noquickies[,c(VarBase$demo, VarBase$factors, VarBase$shadiness, VarBase$manipchecks, VarBase$adsbeliefs, VarBase$consum, VarBase$modelrate, VarBase$productrate, VarBase$adrate, VarBase$conditions)]
+
+write.csv(data_reduced1, file="C:/Users/dalla/Google Drive/R Coding/Shady_Eyes/sunglasses_Study4_clean1_11_26_2019.csv")
+
+save(data_reduced1, VarBase, file="C:/Users/dalla/Google Drive/R Coding/Shady_Eyes/sunglasses_study4_clean1_11_26_2019.Rdata")
+```
+
