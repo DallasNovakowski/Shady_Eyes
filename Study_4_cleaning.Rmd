@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Required Packages
-```{r package_loading, results="hide"}
+```{r package_loading, warning=F,  message=F}
 library(tidyverse)
 ```
 
