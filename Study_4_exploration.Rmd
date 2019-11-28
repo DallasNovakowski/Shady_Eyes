@@ -58,6 +58,7 @@ ggplot(data_reduced1, aes(wtb)) + geom_histogram()
 data_reduced1$value_assess <- as.character(data_reduced1$value_assess)
 
 data_reduced1$value_assess_num <- as.numeric(data_reduced1$value_assess)
+VarBase$consum <- c(VarBase$consum, "value_assess_num")
 
 ggplot(data_reduced1, aes(value_assess_num)) + geom_histogram(binwidth=50)
 
