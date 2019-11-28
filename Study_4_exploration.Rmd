@@ -166,5 +166,5 @@ data_reduced4 <-dplyr::select (data_reduced4, -c(VarBase$modelpers))
 ```{r write new csv and rdata}
 write.csv(data_reduced4, file="C:/Users/dalla/Google Drive/R Coding/Shady_Eyes/sunglasses_Study4_clean2_11_27_2019.csv")
 
-save(data_reduced1, VarBase, file="C:/Users/dalla/Google Drive/R Coding/Shady_Eyes/sunglasses_study4_clean2_11_27_2019.Rdata")
+save(data_reduced4, VarBase, file="C:/Users/dalla/Google Drive/R Coding/Shady_Eyes/sunglasses_study4_clean2_11_27_2019.Rdata")
 ```
