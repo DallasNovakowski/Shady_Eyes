@@ -1,0 +1,207 @@
+---
+title: "Sunglasses project Study 4_analyses"
+author: "Dallas Novakowski"
+date: "28/11/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r required packages & data, warning=F,  message=F}
+library(repmis)
+library(ggpubr)
+library(car)
+library("dplyr")
+
+
+source_data("https://github.com/DallasNovakowski/Shady_Eyes/blob/master/sunglasses_study4_clean2_11_27_2019.Rdata?raw=true")
+```
+
+
+```{r trasform variables to factors, include=FALSE}
+data_reduced4$shade <- factor(data_reduced4$shade, 
+                  levels = c(0, 1, 2),
+                  labels = c("Clear", "Medium", "Dark"))
+                  
+str(data_reduced4$male_model)
+
+data_reduced4$male_model <- factor(data_reduced4$male_model, 
+                  levels = c(0, 1),
+                  labels = c("Female Model", "Male Model"))
+```
+
+# Evaluations of Phoniness
+## ANOVA
+```{r ANOVA on phoniness}
+res.aov.phony <- aov(phony ~ shade + male_model + shade:male_model, data = data_reduced4)
+summary(res.aov.phony)
+
+group_by(data_reduced4, male_model, shade) %>%
+  summarise(
+    count = n(),
+    mean = mean(phony, na.rm = TRUE),
+    sd = sd(phony, na.rm = TRUE)
+  )
+```
+
+```{r ANOVA phoniness assumptions, include=FALSE}
+TukeyHSD(res.aov.phony, which = "shade")
+
+plot(res.aov.phony, 1)
+leveneTest(phony ~ shade*male_model, data = data_reduced4)
+plot(res.aov.phony, 2)
+phony_residuals <- residuals(object = res.aov.phony)
+# Run Shapiro-Wilk test
+shapiro.test(x = phony_residuals )
+```
+
+```{r phony factorial boxplots, include=FALSE}
+#p_phony_xgender <- ggboxplot(data_reduced4, x = "male_model", y = "phony",
+ #         color = "shade", palette = "jco",
+  #        add = "jitter")
+#p_phony_xgender + stat_compare_means(aes(group = shade), label = "p.format")
+
+
+# shade on x-ais, grouped by gender
+#p_phony_xshade <- ggboxplot(data_reduced4, x = "shade", y = "phony",
+ #         color = "male_model", palette = "jco",
+  #        add = "jitter")
+#p_phony_xshade + stat_compare_means(aes(group = male_model), label = "p.format")
+```
+
+## phoniness boxplots
+```{r phony univariate boxplots, echo=FALSE}
+compare_means(phony ~ shade,  data = data_reduced4)
+
+shade_comparisons <- list( c("Clear", "Medium"), c("Clear", "Dark"), c("Medium", "Dark") )
+
+p_phony_shade <- ggboxplot(data_reduced4, x = "shade", y = "phony",
+          color = "shade", palette = "jco",
+          add = "jitter") + 
+  stat_compare_means(comparisons = shade_comparisons, label.y = c(2.8, 3.5, 4.5)) + # Add pairwise comparisons p-value
+  # Add pairwise comparisons p-value
+  stat_compare_means(label.y = 4.5) 
+  
+p_phony_shade
+
+p_phony_gender <- ggboxplot(data_reduced4, x = "male_model", y = "phony",
+          palette = "jco",
+          add = "jitter") + 
+  # Add pairwise comparisons p-value
+  stat_compare_means(label.y = 3.2)
+
+
+p_phony_gender
+```
+ 
+# Willingness to buy
+## Anova on willingness to buy
+```{r ANOVA on wtb, echo=FALSE}
+res.aov.wtb <- aov(wtb ~ shade + male_model + shade:male_model, data = data_reduced4)
+summary(res.aov.wtb)
+
+group_by(data_reduced4, male_model, shade) %>%
+  summarise(
+    count = n(),
+    mean = mean(wtb, na.rm = TRUE),
+    sd = sd(wtb, na.rm = TRUE)
+  )
+```
+
+## Boxplots on willingness to buy
+```{r wtb boxplots, echo=FALSE}
+p_wtb_shade <- ggboxplot(data_reduced4, x = "shade", y = "wtb",
+          color = "shade", palette = "jco",
+          add = "jitter") + 
+  stat_compare_means(comparisons = shade_comparisons, label.y = c(8, 9, 10)) + # Add pairwise comparisons p-value
+  # Add pairwise comparisons p-value
+  stat_compare_means(label.y = 11) 
+  
+p_wtb_shade
+
+p_wtb_gender <- ggboxplot(data_reduced4, x = "male_model", y = "wtb",
+          palette = "jco",
+          add = "jitter") + 
+  # Add pairwise comparisons p-value
+  stat_compare_means(label.y = 8)
+
+p_wtb_gender
+```
+
+# Perceived perceived product value
+## ANOVA on perceived product value
+```{r ANOVA on value, echo=FALSE}
+res.aov.value_assess <- aov(value_assess_num ~ shade + male_model + shade:male_model, data = data_reduced4)
+summary(res.aov.value_assess)
+
+group_by(data_reduced4, male_model, shade) %>%
+  summarise(
+    count = n(),
+    mean = mean(value_assess_num, na.rm = TRUE),
+    sd = sd(value_assess_num, na.rm = TRUE)
+  )
+```
+
+## Boxplots on perceived product value
+```{r boxplots on value, echo=FALSE}
+p_value_shade <- ggboxplot(data_reduced4, x = "shade", y = "value_assess_num",
+          color = "shade", palette = "jco",
+          add = "jitter") + 
+  stat_compare_means(comparisons = shade_comparisons, label.y = c(1700, 1900, 2150)) + # Add pairwise comparisons p-value
+  # Add pairwise comparisons p-value
+  stat_compare_means(label.y = 2300) 
+  
+p_value_shade
+
+p_value_gender <- ggboxplot(data_reduced4, x = "male_model", y = "value_assess_num",
+          palette = "jco",
+          add = "jitter") + 
+  # Add pairwise comparisons p-value
+  stat_compare_means(label.y =1800) 
+
+p_value_gender
+```
+
+
+# Likelihood to recommend
+## ANOVA on likelihood to recommend
+``` {r anova on recommend, echo=FALSE}
+res.aov.recommend <- aov(recommend ~ shade + male_model + shade:male_model, data = data_reduced4)
+summary(res.aov.recommend)
+
+group_by(data_reduced4, male_model, shade) %>%
+  summarise(
+    count = n(),
+    mean = mean(recommend, na.rm = TRUE),
+    sd = sd(recommend, na.rm = TRUE)
+  )
+```
+
+
+## Boxplots on likelihood to recommend
+```{r boxplots on recommend, echo=FALSE}
+p_recommend_shade <- ggboxplot(data_reduced4, x = "shade", y = "recommend",
+          color = "shade", palette = "jco",
+          add = "jitter") + 
+  stat_compare_means(comparisons = shade_comparisons, label.y = c(8, 9, 10)) + # Add pairwise comparisons p-value
+  # Add pairwise comparisons p-value
+  stat_compare_means(label.y = 10) 
+  
+p_recommend_shade
+
+p_recommend_gender <- ggboxplot(data_reduced4, x = "male_model", y = "recommend",
+          palette = "jco",
+          add = "jitter") + 
+  # Add pairwise comparisons p-value
+  stat_compare_means(label.y = 9)
+
+p_recommend_gender
+```
+
+
+# Summary
+The results indicate significant main effects of model gender and shade on perceived phoniness, with no interaction.
+
+Neither shade nor model gender had significant effects on willingness to buy, perceived product value, nor likelihood to recommend the product 
