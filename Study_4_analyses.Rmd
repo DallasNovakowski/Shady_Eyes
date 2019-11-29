@@ -15,6 +15,7 @@ library(ggpubr)
 library(car)
 library("dplyr")
 library(ggstatsplot)
+library(ggthemes)
 
 source_data("https://github.com/DallasNovakowski/Shady_Eyes/blob/master/sunglasses_study4_clean2_11_27_2019.Rdata?raw=true")
 ```
@@ -80,27 +81,34 @@ ggstatsplot::ggbetweenstats(
   data = data_reduced4,
   x = shade,
   y = phony,
+  notch = TRUE,
   messages = FALSE, 
   pairwise.comparisons = TRUE,
-  pairwise.display = "s",
+  mean.ci = TRUE,
+  type = "parametric",
+  pairwise.display = "everything",
   pairwise.annotation = "p",
+  ggtheme = ggthemes::theme_fivethirtyeight(),
 ) + # further modification outside of ggstatsplot
-  ggplot2::coord_cartesian(ylim = c(-2.5, 3)) +
-  ggplot2::scale_y_continuous(breaks = seq(-2, 2, by = 1))
+  ggplot2::coord_cartesian(ylim = c(-2.5, 4)) +
+  ggplot2::scale_y_continuous(breaks = seq(-2, 4, by = 1))
 
 
 ggstatsplot::ggbetweenstats(
   data = data_reduced4,
   x = male_model,
   y = phony,
+  notch = TRUE,
   messages = FALSE, 
-  pairwise.comparisons = TRUE,
-  pairwise.display = "s",
-  pairwise.annotation = "p",
+  ggtheme = ggthemes::theme_fivethirtyeight(),
+  package = "wesanderson", # package from which color palette is to be taken
+  palette = "Darjeeling1", # choosing a different color palette
 ) + # further modification outside of ggstatsplot
-  ggplot2::coord_cartesian(ylim = c(-2.5, 3)) +
-  ggplot2::scale_y_continuous(breaks = seq(-2, 2, by = 1))
+  ggplot2::coord_cartesian(ylim = c(-2.5, 3.5)) +
+  ggplot2::scale_y_continuous(breaks = seq(-2, 3.5, by = 1))
 ```
+
+
 ## Regular phoniness boxplots
 ```{r phony univariate boxplots, echo=FALSE}
 compare_means(phony ~ shade,  data = data_reduced4)
