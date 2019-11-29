@@ -14,7 +14,7 @@ library(repmis)
 library(ggpubr)
 library(car)
 library("dplyr")
-
+library(ggstatsplot)
 
 source_data("https://github.com/DallasNovakowski/Shady_Eyes/blob/master/sunglasses_study4_clean2_11_27_2019.Rdata?raw=true")
 ```
@@ -71,7 +71,37 @@ shapiro.test(x = phony_residuals )
 #p_phony_xshade + stat_compare_means(aes(group = male_model), label = "p.format")
 ```
 
-## phoniness boxplots
+## Fancy box/violin plots on phoniness
+```{r fancy phony boxplots}
+
+set.seed(123)
+
+ggstatsplot::ggbetweenstats(
+  data = data_reduced4,
+  x = shade,
+  y = phony,
+  messages = FALSE, 
+  pairwise.comparisons = TRUE,
+  pairwise.display = "s",
+  pairwise.annotation = "p",
+) + # further modification outside of ggstatsplot
+  ggplot2::coord_cartesian(ylim = c(-2.5, 3)) +
+  ggplot2::scale_y_continuous(breaks = seq(-2, 2, by = 1))
+
+
+ggstatsplot::ggbetweenstats(
+  data = data_reduced4,
+  x = male_model,
+  y = phony,
+  messages = FALSE, 
+  pairwise.comparisons = TRUE,
+  pairwise.display = "s",
+  pairwise.annotation = "p",
+) + # further modification outside of ggstatsplot
+  ggplot2::coord_cartesian(ylim = c(-2.5, 3)) +
+  ggplot2::scale_y_continuous(breaks = seq(-2, 2, by = 1))
+```
+## Regular phoniness boxplots
 ```{r phony univariate boxplots, echo=FALSE}
 compare_means(phony ~ shade,  data = data_reduced4)
 
