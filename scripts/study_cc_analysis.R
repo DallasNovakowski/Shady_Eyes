@@ -673,60 +673,6 @@ summary(scc_recommend_lm_num)
 
 # recommendation
 
-scc_recommend_shade_viofade <- ggplot(data = data, 
-                              aes(y = recommend, x = shade, fill = cbPalette[2])) +  
-  # density slab
-  stat_slab(side = "both", adjust = 2, scale = 0.5,show.legend = F,
-            aes(fill_ramp = stat(level)),.width = c(.50, 1)) + 
-  #dot-whisker
-  stat_summary(fun.data=mean_cl_boot, geom="errorbar", width=0.05,show.legend = F, color = "grey40") +
-  stat_summary(fun=mean, geom="point", size=2,show.legend = F, color = "grey40") +
-  #mean text
-  stat_summary(aes(label=round(..y..,1)), fun=mean, geom="text", size=5,
-               vjust = 5) +
-  
-    stat_compare_means(comparisons = shade_comparisons, label.y = c(5.5, 6.2, 5)) + # Add pairwise comparisons p-value
-  
-  # theming
-  ylab("Likelihood to recommend") +
-  scale_y_continuous(expand = expansion(mult = c(0, 0.05)), limits = c(1, 7), breaks = seq(1,7,3)) +
-  theme(axis.title.y = element_text(size = rel(.7))) +
-  theme_half_open() +  
-  theme(axis.title = element_text(face="bold")) +
-  scale_fill_ramp_discrete(range = c(0.5, 1), aesthetics = "fill_ramp")+
-  scale_colour_manual(values = cbPalette[2], aesthetics = c("colour","fill")) +  
-  guides(fill_ramp = "none") 
-
-scc_recommend_shade_viofade
-
-
-scc_recommend_gender_viofade <- ggplot(data = data, 
-                               aes(y = recommend, x = model_gender, fill = cbPalette[2])) +  
-  # density slab
-  stat_slab(side = "both", adjust = 2, scale = 0.5,show.legend = F,
-            aes(fill_ramp = stat(level)),.width = c(.50, 1)) + 
-  #dot-whisker
-  stat_summary(fun.data=mean_cl_boot, geom="errorbar", width=0.05,show.legend = F, color = "grey40") +
-  stat_summary(fun=mean, geom="point", size=2,show.legend = F, color = "grey40") +
-  #mean text
-  stat_summary(aes(label=round(..y..,1)), fun=mean, geom="text", size=5,
-               vjust = 5) +
-  
-  stat_compare_means(label.y = 6.5) +
-  
-  # theming
-  ylab("Likelihood to recommend") +
-  scale_y_continuous(expand = expansion(mult = c(0, 0.05)), limits = c(1, 7), breaks = seq(1,7,3)) +
-  theme(axis.title.y = element_text(size = rel(.7))) +
-  theme_half_open() +  
-  theme(axis.title = element_text(face="bold")) +
-  scale_fill_ramp_discrete(range = c(0.5, 1), aesthetics = "fill_ramp")+
-  scale_colour_manual(values = cbPalette[2], aesthetics = c("colour","fill")) +  
-  guides(fill_ramp = "none")
-
-scc_recommend_gender_viofade
-
-
 
 scc_recommend_int_viofade <- ggplot(data = data, 
                                       aes(y = recommend, 
